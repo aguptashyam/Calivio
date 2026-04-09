@@ -9,6 +9,7 @@ import Order from '../database/models/order.model';
 import Event from '../database/models/event.model';
 import {ObjectId} from 'mongodb';
 import User from '../database/models/user.model';
+import { resolveMongoUserId } from './user.actions';
 
 export const checkoutOrder = async (order: CheckoutOrderParams) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -16,6 +17,9 @@ export const checkoutOrder = async (order: CheckoutOrderParams) => {
   const price = order.isFree ? 0 : Number(order.price) * 100;
 
   try {
+    const resolvedBuyerId = await resolveMongoUserId(order.buyerId)
+    if (!resolvedBuyerId) throw new Error('Buyer not found')
+
     const session = await stripe.checkout.sessions.create({
       line_items: [
         {
@@ -31,7 +35,7 @@ export const checkoutOrder = async (order: CheckoutOrderParams) => {
       ],
       metadata: {
         eventId: order.eventId,
-        buyerId: order.buyerId,
+        buyerId: resolvedBuyerId,
       },
       mode: 'payment',
       success_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/profile`,
@@ -121,8 +125,17 @@ export async function getOrdersByUser({ userId, limit = 3, page }: GetOrdersByUs
   try {
     await connectToDatabase()
 
+    if (!userId) {
+      return { data: [], totalPages: 0 }
+    }
+
+    const resolvedUserId = await resolveMongoUserId(userId)
+    if (!resolvedUserId) {
+      return { data: [], totalPages: 0 }
+    }
+
     const skipAmount = (Number(page) - 1) * limit
-    const conditions = { buyer: userId }
+    const conditions = { buyer: resolvedUserId }
 
     const orders = await Order.distinct('event._id')
       .find(conditions)

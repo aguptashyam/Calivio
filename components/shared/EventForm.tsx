@@ -52,13 +52,18 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
     let uploadedImageUrl = values.imageUrl;
 
     if(files.length > 0) {
-      const uploadedImages = await startUpload(files)
-
-      if(!uploadedImages) {
-        return
+      try {
+        const uploadedImages = await startUpload(files)
+        if (uploadedImages?.[0]?.url) {
+          uploadedImageUrl = uploadedImages[0].url
+        }
+      } catch (error) {
+        console.error('UploadThing upload failed, using placeholder image', error)
       }
+    }
 
-      uploadedImageUrl = uploadedImages[0].url
+    if (!uploadedImageUrl) {
+      uploadedImageUrl = '/assets/images/placeholder.png'
     }
 
     if(type === 'Create') {

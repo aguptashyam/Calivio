@@ -1,6 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { clerkClient } from '@clerk/nextjs'
+import { isValidObjectId } from 'mongoose'
 
 import { connectToDatabase } from '@/lib/database'
 import User from '@/lib/database/models/user.model'
@@ -14,8 +16,77 @@ export async function createUser(user: CreateUserParams) {
   try {
     await connectToDatabase()
 
-    const newUser = await User.create(user)
+    const newUser = await User.findOneAndUpdate(
+      { clerkId: user.clerkId },
+      {
+        $set: {
+          email: user.email,
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          photo: user.photo,
+        },
+      },
+      { new: true, upsert: true }
+    )
     return JSON.parse(JSON.stringify(newUser))
+  } catch (error) {
+    handleError(error)
+  }
+}
+
+export async function syncUserFromClerk(clerkId: string) {
+  try {
+    await connectToDatabase()
+
+    const existingUser = await User.findOne({ clerkId })
+    if (existingUser) return JSON.parse(JSON.stringify(existingUser))
+
+    const clerkUser = await clerkClient.users.getUser(clerkId)
+    const primaryEmail = clerkUser.emailAddresses[0]?.emailAddress || ''
+    const usernameBase = clerkUser.username || primaryEmail.split('@')[0] || `user_${clerkId.slice(-6)}`
+    const safeUsername = usernameBase
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g, '_')
+      .slice(0, 30)
+
+    const newUser = await User.findOneAndUpdate(
+      { clerkId },
+      {
+        $set: {
+          email: primaryEmail,
+          username: safeUsername,
+          firstName: clerkUser.firstName || 'First',
+          lastName: clerkUser.lastName || 'Last',
+          photo: clerkUser.imageUrl,
+        },
+      },
+      { new: true, upsert: true }
+    )
+
+    return JSON.parse(JSON.stringify(newUser))
+  } catch (error) {
+    handleError(error)
+  }
+}
+
+export async function resolveMongoUserId(userId: string) {
+  try {
+    await connectToDatabase()
+
+    if (!userId) return null
+
+    // Only query by _id when the input is a valid Mongo ObjectId.
+    if (isValidObjectId(userId)) {
+      const byMongoId = await User.findById(userId)
+      if (byMongoId) return byMongoId._id.toString()
+    }
+
+    const byClerkId = await User.findOne({ clerkId: userId })
+    if (byClerkId) return byClerkId._id.toString()
+
+    const syncedUser = await syncUserFromClerk(userId)
+    return syncedUser?._id || null
   } catch (error) {
     handleError(error)
   }

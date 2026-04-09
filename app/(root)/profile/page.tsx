@@ -9,8 +9,7 @@ import Link from 'next/link'
 import React from 'react'
 
 const ProfilePage = async ({ searchParams }: SearchParamProps) => {
-  const { sessionClaims } = auth();
-  const userId = sessionClaims?.userId as string;
+  const { userId } = auth();
 
   const ordersPage = Number(searchParams?.ordersPage) || 1;
   const eventsPage = Number(searchParams?.eventsPage) || 1;
@@ -18,7 +17,7 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
   const orders = await getOrdersByUser({ userId, page: ordersPage})
 
   const orderedEvents = orders?.data.map((order: IOrder) => order.event) || [];
-  const organizedEvents = await getEventsByUser({ userId, page: eventsPage })
+  const organizedEvents = await getEventsByUser({ userId: userId as string, page: eventsPage })
 
   return (
     <>

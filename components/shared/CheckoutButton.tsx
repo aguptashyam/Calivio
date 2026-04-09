@@ -9,7 +9,7 @@ import Checkout from './Checkout'
 
 const CheckoutButton = ({ event }: { event: IEvent }) => {
   const { user } = useUser();
-  const userId = user?.publicMetadata.userId as string;
+  const userId = (user?.publicMetadata.userId as string) || user?.id;
   const hasEventFinished = new Date(event.endDateTime) < new Date();
 
   return (
@@ -27,7 +27,7 @@ const CheckoutButton = ({ event }: { event: IEvent }) => {
           </SignedOut>
 
           <SignedIn>
-            <Checkout event={event} userId={userId} />
+            {userId ? <Checkout event={event} userId={userId} /> : null}
           </SignedIn>
         </>
       )}

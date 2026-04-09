@@ -13,10 +13,12 @@ type CardProps = {
 }
 
 const Card = ({ event, hasOrderLink, hidePrice }: CardProps) => {
-  const { sessionClaims } = auth();
-  const userId = sessionClaims?.userId as string;
+  const { userId: clerkUserId, sessionClaims } = auth();
+  const mongoUserId = sessionClaims?.userId as string | undefined;
 
-  const isEventCreator = userId === event.organizer._id.toString();
+  const isEventCreator =
+    (mongoUserId && mongoUserId === event.organizer._id.toString()) ||
+    (clerkUserId && event.organizer.clerkId === clerkUserId);
 
   return (
     <div className="group relative flex min-h-[380px] w-full max-w-[400px] flex-col overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-lg md:min-h-[438px]">

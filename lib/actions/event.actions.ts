@@ -7,6 +7,7 @@ import Event from '@/lib/database/models/event.model'
 import User from '@/lib/database/models/user.model'
 import Category from '@/lib/database/models/category.model'
 import { handleError } from '@/lib/utils'
+import { resolveMongoUserId } from './user.actions'
 
 import {
   CreateEventParams,
@@ -23,7 +24,7 @@ const getCategoryByName = async (name: string) => {
 
 const populateEvent = (query: any) => {
   return query
-    .populate({ path: 'organizer', model: User, select: '_id firstName lastName' })
+    .populate({ path: 'organizer', model: User, select: '_id firstName lastName clerkId' })
     .populate({ path: 'category', model: Category, select: '_id name' })
 }
 
@@ -32,10 +33,13 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
   try {
     await connectToDatabase()
 
-    const organizer = await User.findById(userId)
+    const resolvedUserId = await resolveMongoUserId(userId)
+    if (!resolvedUserId) throw new Error('Organizer not found')
+
+    const organizer = await User.findById(resolvedUserId)
     if (!organizer) throw new Error('Organizer not found')
 
-    const newEvent = await Event.create({ ...event, category: event.categoryId, organizer: userId })
+    const newEvent = await Event.create({ ...event, category: event.categoryId, organizer: resolvedUserId })
     revalidatePath(path)
 
     return JSON.parse(JSON.stringify(newEvent))
@@ -64,8 +68,11 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
   try {
     await connectToDatabase()
 
+    const resolvedUserId = await resolveMongoUserId(userId)
+    if (!resolvedUserId) throw new Error('Unauthorized or event not found')
+
     const eventToUpdate = await Event.findById(event._id)
-    if (!eventToUpdate || eventToUpdate.organizer.toHexString() !== userId) {
+    if (!eventToUpdate || eventToUpdate.organizer.toHexString() !== resolvedUserId) {
       throw new Error('Unauthorized or event not found')
     }
 
@@ -128,7 +135,12 @@ export async function getEventsByUser({ userId, limit = 6, page }: GetEventsByUs
   try {
     await connectToDatabase()
 
-    const conditions = { organizer: userId }
+    const resolvedUserId = await resolveMongoUserId(userId)
+    if (!resolvedUserId) {
+      return { data: [], totalPages: 0 }
+    }
+
+    const conditions = { organizer: resolvedUserId }
     const skipAmount = (page - 1) * limit
 
     const eventsQuery = Event.find(conditions)
