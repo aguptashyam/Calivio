@@ -7,6 +7,9 @@ import Image from 'next/image';
 
 const EventDetails = async ({ params: { id }, searchParams }: SearchParamProps) => {
   const event = await getEventById(id);
+  const organizerName = event?.organizer
+    ? `${event.organizer.firstName ?? ''} ${event.organizer.lastName ?? ''}`.trim() || 'Unknown Organizer'
+    : 'Unknown Organizer'
 
   const relatedEvents = await getRelatedEventsByCategory({
     categoryId: event.category._id,
@@ -42,7 +45,7 @@ const EventDetails = async ({ params: { id }, searchParams }: SearchParamProps) 
 
               <p className="p-medium-18 ml-2 mt-2 sm:mt-0">
                 by{' '}
-                <span className="text-primary-500">{event.organizer.firstName} {event.organizer.lastName}</span>
+                <span className="text-primary-500">{organizerName}</span>
               </p>
             </div>
           </div>

@@ -15,10 +15,17 @@ type CardProps = {
 const Card = ({ event, hasOrderLink, hidePrice }: CardProps) => {
   const { userId: clerkUserId, sessionClaims } = auth();
   const mongoUserId = sessionClaims?.userId as string | undefined;
+  const organizer = event.organizer;
+
+  const organizerName = organizer
+    ? `${organizer.firstName ?? ''} ${organizer.lastName ?? ''}`.trim() || 'Unknown Organizer'
+    : 'Unknown Organizer'
 
   const isEventCreator =
-    (mongoUserId && mongoUserId === event.organizer._id.toString()) ||
-    (clerkUserId && event.organizer.clerkId === clerkUserId);
+    !!organizer && (
+      (mongoUserId && mongoUserId === organizer._id.toString()) ||
+      (clerkUserId && organizer.clerkId === clerkUserId)
+    );
 
   return (
     <div className="group relative flex min-h-[380px] w-full max-w-[400px] flex-col overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-lg md:min-h-[438px]">
@@ -61,7 +68,7 @@ const Card = ({ event, hasOrderLink, hidePrice }: CardProps) => {
 
         <div className="flex-between w-full">
           <p className="p-medium-14 md:p-medium-16 text-grey-600">
-            {event.organizer.firstName} {event.organizer.lastName}
+            {organizerName}
           </p>
 
           {hasOrderLink && (
