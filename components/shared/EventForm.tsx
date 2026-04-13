@@ -54,16 +54,23 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
     if(files.length > 0) {
       try {
         const uploadedImages = await startUpload(files)
-        if (uploadedImages?.[0]?.url) {
-          uploadedImageUrl = uploadedImages[0].url
+        const uploadedFile = uploadedImages?.[0]
+        uploadedImageUrl = uploadedFile?.ufsUrl ?? uploadedFile?.url ?? ''
+
+        if (!uploadedImageUrl) {
+          form.setError('imageUrl', { message: 'Image upload completed but no public URL was returned. Please try again.' })
+          return
         }
       } catch (error) {
-        console.error('UploadThing upload failed, using placeholder image', error)
+        console.error('UploadThing upload failed', error)
+        form.setError('imageUrl', { message: 'Image upload failed. Please check your UploadThing setup and try again.' })
+        return
       }
     }
 
     if (!uploadedImageUrl) {
-      uploadedImageUrl = '/assets/images/placeholder.png'
+      form.setError('imageUrl', { message: 'Please upload an image before submitting the event.' })
+      return
     }
 
     if(type === 'Create') {

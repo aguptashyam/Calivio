@@ -1,9 +1,6 @@
 'use client'
 
 import { useCallback, Dispatch, SetStateAction } from 'react'
-import type { FileWithPath } from '@uploadthing/react'
-import { useDropzone } from '@uploadthing/react/hooks'
-import { generateClientDropzoneAccept } from 'uploadthing/client'
 
 import { Button } from '@/components/ui/button'
 import { convertFileToUrl } from '@/lib/utils'
@@ -15,21 +12,22 @@ type FileUploaderProps = {
 }
 
 export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploaderProps) {
-  const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
+  const onSelectFile = useCallback((acceptedFiles: File[]) => {
+    if (!acceptedFiles.length) return
+
     setFiles(acceptedFiles)
     onFieldChange(convertFileToUrl(acceptedFiles[0]))
   }, [])
 
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    accept: 'image/*' ? generateClientDropzoneAccept(['image/*']) : undefined,
-  })
-
   return (
-    <div
-      {...getRootProps()}
-      className="flex-center bg-dark-3 flex h-72 cursor-pointer flex-col overflow-hidden rounded-xl bg-grey-50">
-      <input {...getInputProps()} className="cursor-pointer" />
+    <div className="flex-center bg-dark-3 flex h-72 cursor-pointer flex-col overflow-hidden rounded-xl bg-grey-50">
+      <input
+        id="event-image-upload"
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(event) => onSelectFile(Array.from(event.target.files ?? []))}
+      />
 
       {imageUrl ? (
         <div className="flex h-full w-full flex-1 justify-center ">
@@ -46,7 +44,11 @@ export function FileUploader({ imageUrl, onFieldChange, setFiles }: FileUploader
           <img src="/assets/icons/upload.svg" width={77} height={77} alt="file upload" />
           <h3 className="mb-2 mt-2">Drag photo here</h3>
           <p className="p-medium-12 mb-4">SVG, PNG, JPG</p>
-          <Button type="button" className="rounded-full">
+          <Button
+            type="button"
+            className="rounded-full"
+            onClick={() => document.getElementById('event-image-upload')?.click()}
+          >
             Select from computer
           </Button>
         </div>
