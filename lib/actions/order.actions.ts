@@ -50,8 +50,8 @@ export const checkoutOrder = async (order: CheckoutOrderParams) => {
         buyerId: resolvedBuyerId,
       },
       mode: 'payment',
-      success_url: `${baseUrl}/profile?success=1`,
-      cancel_url: `${baseUrl}/events/${order.eventId}?canceled=1`,
+      success_url: `${baseUrl}/profile`,
+      cancel_url: `${baseUrl}/`,
     });
 
     redirect(session.url!)
