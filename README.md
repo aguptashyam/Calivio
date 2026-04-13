@@ -1,9 +1,6 @@
 ## <a name="introduction">🤖 Introduction</a>
 
-Built on Next.js 14, the events application stands as a comprehensive, full-stack platform for managing events. It serves as a hub, spotlighting diverse events taking place globally. Featuring seamless payment processing through Stripe, you have the capability to purchase tickets for any event or even initiate and manage your own events.
-
-If you're getting started and need assistance or face any bugs, join our active Discord community with over 27k+ members. It's a place where people help each other out.
-
+Built on Next.js, the events application stands as a comprehensive, full-stack platform for managing events. It serves as a hub, spotlighting diverse events worldwide. Featuring seamless payment processing through Stripe, you have the capability to purchase tickets for any event or even initiate and manage your own events.
 
 ## <a name="tech-stack">⚙️ Tech Stack</a>
 
@@ -35,7 +32,7 @@ If you're getting started and need assistance or face any bugs, join our active 
     
 👉 **New Category:** Dynamic categorization allows for the seamless addition of new event categories, keeping your platform adaptable.
     
-👉 **Checkout and Pay with Stripe:** Smooth and secure payment transactions using Stripe, enhancing user experience during the checkout process.
+👉 **Checkout and Pay with Stripe:** Smooth, secure payment transactions with Stripe, enhancing the user experience during checkout.
     
 👉 **Event Orders:** Comprehensive order management system, providing a clear overview of all event-related transactions.
     
@@ -45,7 +42,7 @@ and many more, including code architecture and reusability
 
 ## <a name="quick-start">🤸 Quick Start</a>
 
-Follow these steps to set up the project locally on your machine.
+You can follow these steps to set up the project locally on your machine.
 
 **Prerequisites**
 
