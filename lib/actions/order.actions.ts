@@ -12,7 +12,19 @@ import User from '../database/models/user.model';
 import { resolveMongoUserId } from './user.actions';
 
 export const checkoutOrder = async (order: CheckoutOrderParams) => {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('Missing STRIPE_SECRET_KEY environment variable')
+  }
+
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+  const configuredBaseUrl = process.env.NEXT_PUBLIC_SERVER_URL?.trim()
+  const vercelUrl = process.env.VERCEL_URL?.trim()
+  const baseUrl = configuredBaseUrl
+    ? configuredBaseUrl.replace(/\/$/, '')
+    : vercelUrl
+      ? `https://${vercelUrl.replace(/\/$/, '')}`
+      : 'http://localhost:3000'
 
   const price = order.isFree ? 0 : Math.round(Number(order.price) * 100);
 
@@ -38,8 +50,8 @@ export const checkoutOrder = async (order: CheckoutOrderParams) => {
         buyerId: resolvedBuyerId,
       },
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/profile`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/`,
+      success_url: `${baseUrl}/profile?success=1`,
+      cancel_url: `${baseUrl}/events/${order.eventId}?canceled=1`,
     });
 
     redirect(session.url!)
