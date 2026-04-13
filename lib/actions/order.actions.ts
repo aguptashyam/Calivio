@@ -14,7 +14,7 @@ import { resolveMongoUserId } from './user.actions';
 export const checkoutOrder = async (order: CheckoutOrderParams) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-  const price = order.isFree ? 0 : Number(order.price) * 100;
+  const price = order.isFree ? 0 : Math.round(Number(order.price) * 100);
 
   try {
     const resolvedBuyerId = await resolveMongoUserId(order.buyerId)
