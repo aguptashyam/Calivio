@@ -11,8 +11,8 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
-  title: "Cavilio",
-  description: "Cavilio is a platform for event management.",
+  title: "Calivio",
+  description: "Calivio is a platform for event management.",
   icons: {
     icon: "/assets/images/logo.svg",
   },

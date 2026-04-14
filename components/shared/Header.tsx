@@ -14,7 +14,7 @@ const Header = () => {
             src="/assets/images/logo.svg"
             width={128}
             height={38}
-            alt="Cavilio logo"
+            alt="Calivio logo"
           />
         </Link>
 
