@@ -7,7 +7,7 @@ import React from 'react'
 import { Button } from '../ui/button'
 import Checkout from './Checkout'
 
-const CheckoutButton = ({ event }: { event: IEvent }) => {
+const CheckoutButton = ({ event, hasPurchased = false }: { event: IEvent; hasPurchased?: boolean }) => {
   const { user } = useUser();
   const userId = (user?.publicMetadata.userId as string) || user?.id;
   const hasEventFinished = new Date(event.endDateTime) < new Date();
@@ -16,6 +16,12 @@ const CheckoutButton = ({ event }: { event: IEvent }) => {
     <div className="flex items-center gap-3">
       {hasEventFinished ? (
         <p className="p-2 text-red-400">Sorry, tickets are no longer available.</p>
+      ) : hasPurchased ? (
+        <SignedIn>
+          <Button type="button" size="lg" className="button sm:w-fit" disabled>
+            {event.isFree ? 'Ticket Claimed' : 'Ticket Already Purchased'}
+          </Button>
+        </SignedIn>
       ): (
         <>
           <SignedOut>

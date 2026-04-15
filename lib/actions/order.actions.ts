@@ -171,3 +171,23 @@ export async function getOrdersByUser({ userId, limit = 3, page }: GetOrdersByUs
     handleError(error)
   }
 }
+
+export async function hasUserOrderedEvent({ userId, eventId }: { userId: string; eventId: string }) {
+  try {
+    await connectToDatabase()
+
+    if (!userId || !eventId) return false
+
+    const resolvedUserId = await resolveMongoUserId(userId)
+    if (!resolvedUserId) return false
+
+    const existingOrder = await Order.exists({
+      event: eventId,
+      buyer: resolvedUserId,
+    })
+
+    return !!existingOrder
+  } catch (error) {
+    handleError(error)
+  }
+}
